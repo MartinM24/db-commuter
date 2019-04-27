@@ -1,2 +1,10 @@
-# db-commuter
-Database Communication Manager
+## Database Communication Manager
+
+Collection of methods for communication with database. 
+Supports following databases: 
+* sqlite
+
+
+
+
+
