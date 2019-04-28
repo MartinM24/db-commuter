@@ -6,6 +6,8 @@ Connection to database
 
 import abc
 
+import sqlite3
+
 
 __all__ = [
     "SqliteConnection",
@@ -50,10 +52,10 @@ class SqliteConnection(Connection):
         self.path2db = path2db
 
     def set_connection(self, **kwargs):
-        raise NotImplementedError()
+        self.conn = sqlite3.connect(self.path2db)
 
     def close_connection(self):
-        raise NotImplementedError
+        self.conn.close()
 
 
 class PgConnection(Connection):
