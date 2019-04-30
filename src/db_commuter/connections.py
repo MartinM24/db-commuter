@@ -10,7 +10,7 @@ import sqlite3
 
 
 __all__ = [
-    "SqliteConnection",
+    "SQLiteConnection",
     "PgConnection"
 ]
 
@@ -29,6 +29,8 @@ class Connection(abc.ABC):
         self.close_connection()
 
     def get_conn(self):
+        if self.conn is None:
+            self.set_connection()
         return self.conn
 
     @abc.abstractmethod
@@ -40,9 +42,9 @@ class Connection(abc.ABC):
         raise NotImplementedError()
 
 
-class SqliteConnection(Connection):
+class SQLiteConnection(Connection):
     """
-    Establish connection with Sqlite database
+    Establish connection with SQLite database
     """
     def __init__(self, path2db):
         """
@@ -51,7 +53,7 @@ class SqliteConnection(Connection):
         super().__init__()
         self.path2db = path2db
 
-    def set_connection(self, **kwargs):
+    def set_connection(self):
         self.conn = sqlite3.connect(self.path2db)
 
     def close_connection(self):
