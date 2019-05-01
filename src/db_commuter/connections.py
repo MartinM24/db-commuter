@@ -7,6 +7,7 @@ Connection to database
 import abc
 
 import sqlite3
+from sqlalchemy import create_engine
 
 
 __all__ = [
@@ -20,7 +21,12 @@ class Connection(abc.ABC):
     Abstract class, provides definitions of basic connection parameters
     """
     def __init__(self):
+        """
+        conn: connection to database
+        engine: SQLAlchemy engine
+        """
         self.conn = None
+        self.engine = None
 
     def __del__(self):
         """
@@ -33,13 +39,20 @@ class Connection(abc.ABC):
             self.set_connection()
         return self.conn
 
+    def get_engine(self):
+        if self.engine is None:
+            self.set_connection()
+        return self.engine
+
     @abc.abstractmethod
     def set_connection(self, **kwargs):
         raise NotImplementedError()
 
-    @abc.abstractmethod
     def close_connection(self):
-        raise NotImplementedError()
+        if self.conn is not None:
+            self.conn.close()
+        if self.engine is not None:
+            self.engine.dispose()
 
 
 class SQLiteConnection(Connection):
@@ -55,9 +68,7 @@ class SQLiteConnection(Connection):
 
     def set_connection(self):
         self.conn = sqlite3.connect(self.path2db)
-
-    def close_connection(self):
-        self.conn.close()
+        self.engine = create_engine('sqlite://' + self.path2db, echo=False)
 
 
 class PgConnection(Connection):
@@ -79,6 +90,3 @@ class PgConnection(Connection):
 
     def set_connection(self, **kwargs):
         raise NotImplementedError()
-
-    def close_connection(self):
-        raise NotImplementedError

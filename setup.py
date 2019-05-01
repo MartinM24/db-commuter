@@ -25,7 +25,8 @@ setup(
     zip_safe=False,
     packages=find_packages("src"),
     install_requires=[
-        "pandas>=0.24.0"
+        "pandas>=0.24.0",
+        "SQLAlchemy>=1.3.3"
     ],
     extras_require={
         "testing": [
