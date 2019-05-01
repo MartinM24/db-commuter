@@ -47,7 +47,7 @@ class Commuter(abc.ABC):
         except (ValueError, exc.ProgrammingError) as error:
             return error
 
-        self.connector.close_connection()
+        self.connector.close_engine()
 
         return None
 

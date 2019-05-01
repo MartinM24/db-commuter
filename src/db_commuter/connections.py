@@ -33,6 +33,7 @@ class Connection(abc.ABC):
         close connection when class object is garbage collected
         """
         self.close_connection()
+        self.close_engine()
 
     def get_conn(self):
         if self.conn is None:
@@ -51,6 +52,8 @@ class Connection(abc.ABC):
     def close_connection(self):
         if self.conn is not None:
             self.conn.close()
+
+    def close_engine(self):
         if self.engine is not None:
             self.engine.dispose()
 
