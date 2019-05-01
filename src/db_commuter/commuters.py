@@ -6,14 +6,46 @@ Collection of methods for communication with database
 
 import abc
 
+import pandas as pd
 from sqlalchemy import exc
 
 from db_commuter.connections import *
+
+__all__ = [
+    "SQLiteCommuter",
+    "PgCommuter"
+]
 
 
 class Commuter(abc.ABC):
     def __init__(self, connector):
         self.connector = connector
+
+    @abc.abstractmethod
+    def select_to_pandas(self, cmd, **kwargs):
+        """
+        select data from database object using selection command (cmd)
+        and put it in pandas object
+        """
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    def insert_from_pandas(self, obj, data, **kwargs):
+        """
+        insert pandas object (data) into database object (obj)
+        """
+        raise NotImplementedError()
+
+
+class SQLCommuter(Commuter):
+    """
+    Parent class for SQL databases
+    """
+    def __init__(self, connector):
+        super().__init__(connector)
+
+    def delete_table(self, table_name, **kwargs):
+        raise NotImplementedError()
 
     def execute(self, cmd, commit=True):
         """
@@ -33,9 +65,20 @@ class Commuter(abc.ABC):
         # close the connection
         self.connector.close_connection()
 
+    def select_to_pandas(self, cmd, **kwargs):
+        try:
+            with self.connector.get_engine().connect() as conn:
+                data = pd.read_sql_query(cmd, conn)
+        except exc.ProgrammingError as error:
+            data = pd.DataFrame()
+
+        self.connector.close_engine()
+
+        return data
+
     def insert_from_pandas(self, table_name, data, **kwargs):
         """
-        insert a pandas dataframe (data) into database table (table_name)
+        insert pandas dataframe (data) into database table (table_name)
 
         :param chunksize: rows will be written in batches of this size at a time
         """
@@ -52,11 +95,38 @@ class Commuter(abc.ABC):
         return None
 
 
-class SQLiteCommuter(Commuter):
+class SQLiteCommuter(SQLCommuter):
+    """
+    Methods for communication with SQLite database
+    """
     def __init__(self, path2db):
         super().__init__(SQLiteConnection(path2db))
 
+    def delete_table(self, table_name, **kwargs):
+        self.execute('drop table if exists %s' % table_name)
 
-class PgCommuter(Commuter):
+
+class PgCommuter(SQLCommuter):
+    """
+    Methods for communication with PostgreSQL database
+    """
     def __init__(self, host, port, user, password, db_name, ssl_mode):
         super().__init__(PgConnection(host, port, user, password, db_name, ssl_mode))
+
+    def delete_table(self, table_name, **kwargs):
+        """
+        key-value arguments
+        :param schema: name of the database schema
+        :param cascade: boolean, True if delete cascade
+        """
+        schema = kwargs.get('schema', None)
+        cascade = kwargs.get('cascade', False)
+
+        if schema is not None:
+            table_name = schema + '.' + table_name
+
+        if cascade:
+            self.execute('drop table if exists %s cascade' % table_name)
+        else:
+            self.execute('drop table if exists %s' % table_name)
+
