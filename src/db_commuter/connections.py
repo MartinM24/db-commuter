@@ -42,20 +42,26 @@ class Connection(abc.ABC):
 
     def get_engine(self):
         if self.engine is None:
-            self.set_connection()
+            self.set_engine()
         return self.engine
 
     @abc.abstractmethod
     def set_connection(self, **kwargs):
         raise NotImplementedError()
 
+    @abc.abstractmethod
+    def set_engine(self, **kwargs):
+        raise NotImplementedError()
+
     def close_connection(self):
         if self.conn is not None:
             self.conn.close()
+            self.conn = None
 
     def close_engine(self):
         if self.engine is not None:
             self.engine.dispose()
+            self.engine = None
 
 
 class SQLiteConnection(Connection):
@@ -71,7 +77,9 @@ class SQLiteConnection(Connection):
 
     def set_connection(self):
         self.conn = sqlite3.connect(self.path2db)
-        self.engine = create_engine('sqlite://' + self.path2db, echo=False)
+
+    def set_engine(self, **kwargs):
+        self.engine = create_engine('sqlite:///' + self.path2db, echo=False)
 
 
 class PgConnection(Connection):
@@ -92,4 +100,7 @@ class PgConnection(Connection):
         self.ssl_mode = ssl_mode
 
     def set_connection(self, **kwargs):
+        raise NotImplementedError()
+
+    def set_engine(self, **kwargs):
         raise NotImplementedError()

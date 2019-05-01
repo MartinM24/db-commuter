@@ -9,3 +9,6 @@ path2scripts = path.join(root_dir, 'scripts')
 
 # path to secret.env
 path2env = path.join(root_dir, 'app', 'secret.env')
+
+# path to SQLite database
+path2sqlite = path.join(root_dir, 'db', 'test_db.sqlite3')

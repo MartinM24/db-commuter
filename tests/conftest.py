@@ -16,10 +16,6 @@ load_dotenv(config.path2env)
 
 
 @pytest.fixture(scope='session')
-def sqlite_commuter():
-    return SQLiteCommuter(getenv('PATH_TO_SQLITE_DB'))
-
-@pytest.fixture(scope='session')
 def pg_commuter():
     host = getenv('PG_TEST_DB_HOST')
     port = getenv('PG_TEST_DB_PORT')

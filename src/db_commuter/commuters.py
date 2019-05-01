@@ -47,6 +47,9 @@ class SQLCommuter(Commuter):
     def delete_table(self, table_name, **kwargs):
         raise NotImplementedError()
 
+    def is_table_exist(self, table_name, **kwargs):
+        raise NotImplementedError()
+
     def execute(self, cmd, commit=True):
         """
         execute SQL command (cmd) and commit (if True) changes to database
@@ -65,11 +68,27 @@ class SQLCommuter(Commuter):
         # close the connection
         self.connector.close_connection()
 
+    def execute_script(self, path2script, commit=True):
+        """
+        execute multiple SQL statements separated by semicolon
+        """
+        with open(path2script, 'r') as fh:
+            script = fh.read()
+
+        conn = self.connector.get_conn()
+        cur = conn.cursor()
+        cur.executescript(script)
+
+        if commit:
+            conn.commit()
+
+        self.connector.close_connection()
+
     def select_to_pandas(self, cmd, **kwargs):
         try:
             with self.connector.get_engine().connect() as conn:
                 data = pd.read_sql_query(cmd, conn)
-        except exc.ProgrammingError as error:
+        except exc.ProgrammingError:
             data = pd.DataFrame()
 
         self.connector.close_engine()
@@ -105,6 +124,16 @@ class SQLiteCommuter(SQLCommuter):
     def delete_table(self, table_name, **kwargs):
         self.execute('drop table if exists %s' % table_name)
 
+    def is_table_exist(self, table_name, **kwargs):
+        cmd = 'select name from sqlite_master where type=\'table\' and name=\'%s\'' % table_name
+
+        data = self.select_to_pandas(cmd)
+
+        if len(data) > 0:
+            return data.name[0] == table_name
+
+        return False
+
 
 class PgCommuter(SQLCommuter):
     """
@@ -122,11 +151,22 @@ class PgCommuter(SQLCommuter):
         schema = kwargs.get('schema', None)
         cascade = kwargs.get('cascade', False)
 
-        if schema is not None:
-            table_name = schema + '.' + table_name
+        table_name = self.__get_table_name(schema, table_name)
 
         if cascade:
             self.execute('drop table if exists %s cascade' % table_name)
         else:
             self.execute('drop table if exists %s' % table_name)
 
+    def is_table_exist(self, table_name, **kwargs):
+        schema = kwargs.get('schema', None)
+
+        table_name = self.__get_table_name(schema, table_name)
+
+        raise NotImplementedError()
+
+    @staticmethod
+    def __get_table_name(schema, table_name):
+        if schema is None:
+            return table_name
+        return schema + '.' + table_name
