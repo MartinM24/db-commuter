@@ -1,4 +1,3 @@
-
 CREATE TABLE IF NOT EXISTS test_table (
     var_a timestamp,
     var_b integer NOT NULL,

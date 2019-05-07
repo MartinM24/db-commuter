@@ -4,6 +4,11 @@
 Test SQLite commuter methods
 """
 
+from os import path
+
+from datetime import datetime
+import pandas as pd
+
 from db_commuter.commuters import SQLiteCommuter
 from app import config
 
@@ -27,5 +32,35 @@ def test_execute():
     commuter.execute('create table if not exists test_table(var_a integer)')
 
     assert commuter.is_table_exist('test_table')
+
+    commuter.delete_table('test_table')
+
+
+def test_execute_script():
+    if commuter.is_table_exist('test_table'):
+        commuter.delete_table('test_table')
+
+    assert not commuter.is_table_exist('test_table')
+
+    commuter.execute_script(path.join(config.path2scripts, 'create_test_table.sql'))
+
+    assert commuter.is_table_exist('test_table')
+
+    commuter.delete_table('test_table')
+
+
+def test_select_insert(table_data):
+    if commuter.is_table_exist('test_table'):
+        commuter.delete_table('test_table')
+
+    commuter.execute_script(path.join(config.path2scripts, 'create_test_table.sql'))
+
+    commuter.insert('test_table', table_data)
+
+    data = commuter.select('select * from test_table')
+    data['date'] = pd.to_datetime(data['var_a'])
+
+    assert data['date'][0].date() == datetime.now().date()
+    assert len(data) == 3
 
     commuter.delete_table('test_table')

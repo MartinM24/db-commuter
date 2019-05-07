@@ -22,7 +22,7 @@ class Commuter(abc.ABC):
         self.connector = connector
 
     @abc.abstractmethod
-    def select_to_pandas(self, cmd, **kwargs):
+    def select(self, cmd, **kwargs):
         """
         select data from database object using selection command (cmd)
         and put it in pandas object
@@ -30,7 +30,7 @@ class Commuter(abc.ABC):
         raise NotImplementedError()
 
     @abc.abstractmethod
-    def insert_from_pandas(self, obj, data, **kwargs):
+    def insert(self, obj, data, **kwargs):
         """
         insert pandas object (data) into database object (obj)
         """
@@ -84,7 +84,7 @@ class SQLCommuter(Commuter):
 
         self.connector.close_connection()
 
-    def select_to_pandas(self, cmd, **kwargs):
+    def select(self, cmd, **kwargs):
         try:
             with self.connector.get_engine().connect() as conn:
                 data = pd.read_sql_query(cmd, conn)
@@ -95,7 +95,7 @@ class SQLCommuter(Commuter):
 
         return data
 
-    def insert_from_pandas(self, table_name, data, **kwargs):
+    def insert(self, table_name, data, **kwargs):
         """
         insert pandas dataframe (data) into database table (table_name)
 
@@ -127,7 +127,7 @@ class SQLiteCommuter(SQLCommuter):
     def is_table_exist(self, table_name, **kwargs):
         cmd = 'select name from sqlite_master where type=\'table\' and name=\'%s\'' % table_name
 
-        data = self.select_to_pandas(cmd)
+        data = self.select(cmd)
 
         if len(data) > 0:
             return data.name[0] == table_name
@@ -144,7 +144,6 @@ class PgCommuter(SQLCommuter):
 
     def delete_table(self, table_name, **kwargs):
         """
-        key-value arguments
         :param schema: name of the database schema
         :param cascade: boolean, True if delete cascade
         """
