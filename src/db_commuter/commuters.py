@@ -7,7 +7,6 @@ Collection of methods for communication with database
 import abc
 
 import pandas as pd
-from sqlalchemy import exc
 
 from db_commuter.connections import *
 
@@ -85,11 +84,8 @@ class SQLCommuter(Commuter):
         self.connector.close_connection()
 
     def select(self, cmd, **kwargs):
-        try:
-            with self.connector.get_engine().connect() as conn:
-                data = pd.read_sql_query(cmd, conn)
-        except exc.ProgrammingError:
-            data = pd.DataFrame()
+        with self.connector.get_engine().connect() as conn:
+            data = pd.read_sql_query(cmd, conn)
 
         self.connector.close_engine()
 
@@ -103,15 +99,10 @@ class SQLCommuter(Commuter):
         """
         chunksize = kwargs.get('chunksize', None)
 
-        try:
-            data.to_sql(table_name, con=self.connector.get_engine(),
-                        if_exists='append', index=False, chunksize=chunksize)
-        except (ValueError, exc.ProgrammingError) as error:
-            return error
+        data.to_sql(table_name, con=self.connector.get_engine(),
+                    if_exists='append', index=False, chunksize=chunksize)
 
         self.connector.close_engine()
-
-        return None
 
 
 class SQLiteCommuter(SQLCommuter):

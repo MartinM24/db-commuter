@@ -24,6 +24,9 @@ def test_engine():
 
 
 def test_execute():
+    """
+    execute 'create table' command and verify that table has been created
+    """
     if commuter.is_table_exist('test_table'):
         commuter.delete_table('test_table')
 
@@ -37,6 +40,9 @@ def test_execute():
 
 
 def test_execute_script():
+    """
+    execute 'create table' command from .sql script and verify that table has been created
+    """
     if commuter.is_table_exist('test_table'):
         commuter.delete_table('test_table')
 
@@ -50,6 +56,9 @@ def test_execute_script():
 
 
 def test_select_insert(table_data):
+    """
+    insert from pandas dataframe to table and select from table to dataframe
+    """
     if commuter.is_table_exist('test_table'):
         commuter.delete_table('test_table')
 
