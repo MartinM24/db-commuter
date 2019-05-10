@@ -9,67 +9,64 @@ from os import path
 from datetime import datetime
 import pandas as pd
 
-from db_commuter.commuters import SQLiteCommuter
-from app import config
-
-commuter = SQLiteCommuter(config.path2sqlite)
+import config
 
 
-def test_connection():
-    assert commuter.connector.get_conn() is not None
+def test_connection(sqlite_commuter):
+    assert sqlite_commuter.connector.get_conn() is not None
 
 
-def test_engine():
-    assert commuter.connector.get_engine().connect().connection.is_valid
+def test_engine(sqlite_commuter):
+    assert sqlite_commuter.connector.get_engine().connect().connection.is_valid
 
 
-def test_execute():
+def test_execute(sqlite_commuter):
     """
     execute 'create table' command and verify that table has been created
     """
-    if commuter.is_table_exist('test_table'):
-        commuter.delete_table('test_table')
+    if sqlite_commuter.is_table_exist('test_table'):
+        sqlite_commuter.delete_table('test_table')
 
-    assert not commuter.is_table_exist('test_table')
+    assert not sqlite_commuter.is_table_exist('test_table')
 
-    commuter.execute('create table if not exists test_table(var_a integer)')
+    sqlite_commuter.execute('create table if not exists test_table(var_a integer)')
 
-    assert commuter.is_table_exist('test_table')
+    assert sqlite_commuter.is_table_exist('test_table')
 
-    commuter.delete_table('test_table')
+    sqlite_commuter.delete_table('test_table')
 
 
-def test_execute_script():
+def test_execute_script(sqlite_commuter):
     """
     execute 'create table' command from .sql script and verify that table has been created
     """
-    if commuter.is_table_exist('test_table'):
-        commuter.delete_table('test_table')
+    if sqlite_commuter.is_table_exist('test_table'):
+        sqlite_commuter.delete_table('test_table')
 
-    assert not commuter.is_table_exist('test_table')
+    assert not sqlite_commuter.is_table_exist('test_table')
 
-    commuter.execute_script(path.join(config.path2scripts, 'create_test_table.sql'))
+    sqlite_commuter.execute_script(path.join(config.path2scripts, 'create_test_table.sql'))
 
-    assert commuter.is_table_exist('test_table')
+    assert sqlite_commuter.is_table_exist('test_table')
 
-    commuter.delete_table('test_table')
+    sqlite_commuter.delete_table('test_table')
 
 
-def test_select_insert(table_data):
+def test_select_insert(sqlite_commuter, table_data):
     """
     insert from pandas dataframe to table and select from table to dataframe
     """
-    if commuter.is_table_exist('test_table'):
-        commuter.delete_table('test_table')
+    if sqlite_commuter.is_table_exist('test_table'):
+        sqlite_commuter.delete_table('test_table')
 
-    commuter.execute_script(path.join(config.path2scripts, 'create_test_table.sql'))
+    sqlite_commuter.execute_script(path.join(config.path2scripts, 'create_test_table.sql'))
 
-    commuter.insert('test_table', table_data)
+    sqlite_commuter.insert('test_table', table_data)
 
-    data = commuter.select('select * from test_table')
-    data['date'] = pd.to_datetime(data['var_a'])
+    data = sqlite_commuter.select('select * from test_table')
+    data['date'] = pd.to_datetime(data['var_1'])
 
     assert data['date'][0].date() == datetime.now().date()
     assert len(data) == 3
 
-    commuter.delete_table('test_table')
+    sqlite_commuter.delete_table('test_table')

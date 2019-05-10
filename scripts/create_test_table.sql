@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS test_table (
-    var_a timestamp,
-    var_b integer NOT NULL,
-    var_c text,
-    var_d real
+    var_1 timestamp,
+    var_2 integer NOT NULL,
+    var_3 text,
+    var_4 real
 );
