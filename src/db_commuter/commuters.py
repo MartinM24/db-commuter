@@ -95,12 +95,14 @@ class SQLCommuter(Commuter):
         """
         insert pandas dataframe (data) into database table (table_name)
 
+        :param schema: specify the schema, if None, use default schema.
         :param chunksize: rows will be written in batches of this size at a time
         """
+        schema = kwargs.get('schema', None)
         chunksize = kwargs.get('chunksize', None)
 
         data.to_sql(table_name, con=self.connector.get_engine(),
-                    if_exists='append', index=False, chunksize=chunksize)
+                    schema=schema, if_exists='append', index=False, chunksize=chunksize)
 
         self.connector.close_engine()
 
@@ -132,6 +134,13 @@ class PgCommuter(SQLCommuter):
     """
     def __init__(self, host, port, user, password, db_name, ssl_mode):
         super().__init__(PgConnection(host, port, user, password, db_name, ssl_mode))
+
+    @classmethod
+    def from_dict(cls, params):
+        """alternative constructor used access parameters from dictionary
+        """
+        return cls(params['host'], params['port'], params['user'],
+                   params['password'], params['db_name'], params['ssl_mode'])
 
     def delete_table(self, table_name, **kwargs):
         """

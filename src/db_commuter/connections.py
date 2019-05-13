@@ -7,6 +7,7 @@ Connection to database
 import abc
 
 import sqlite3
+import psycopg2
 from sqlalchemy import create_engine
 
 
@@ -100,7 +101,18 @@ class PgConnection(Connection):
         self.ssl_mode = ssl_mode
 
     def set_connection(self, **kwargs):
-        raise NotImplementedError()
+        conn = 'dbname=' + self.db_name + ' ' + 'user=' + self.user + ' ' + \
+               'password=' + self.password + ' ' + 'host=' + self.host
+        if self.ssl_mode:
+            conn += ' ' + 'sslmode=require'
+        self.conn = psycopg2.connect(conn)
 
     def set_engine(self, **kwargs):
-        raise NotImplementedError()
+        engine = 'postgresql://' + self.user + ':' + self.password + '@' + \
+                 self.host + ':' + self.port + '/' + self.db_name
+        if self.ssl_mode:
+            engine += '?' + 'sslmode=require'
+        self.engine = create_engine(engine)
+
+
+
