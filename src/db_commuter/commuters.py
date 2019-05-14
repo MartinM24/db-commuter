@@ -7,6 +7,7 @@ Collection of methods for communication with database
 import abc
 
 import pandas as pd
+from sqlalchemy import exc
 
 from db_commuter.connections import *
 
@@ -97,12 +98,17 @@ class SQLCommuter(Commuter):
 
         :param schema: specify the schema, if None, use default schema.
         :param chunksize: rows will be written in batches of this size at a time
+
+        :raises ValueError: if insert fails
         """
         schema = kwargs.get('schema', None)
         chunksize = kwargs.get('chunksize', None)
 
-        data.to_sql(table_name, con=self.connector.get_engine(),
-                    schema=schema, if_exists='append', index=False, chunksize=chunksize)
+        try:
+            data.to_sql(table_name, con=self.connector.get_engine(),
+                        schema=schema, if_exists='append', index=False, chunksize=chunksize)
+        except (ValueError, exc.IntegrityError):
+            raise ValueError
 
         self.connector.close_engine()
 
