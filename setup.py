@@ -3,7 +3,6 @@
 import os
 from setuptools import find_packages, setup
 
-
 ROOT_DIR = os.path.abspath(os.path.dirname(__file__))
 
 try:
@@ -17,6 +16,7 @@ setup(
     version="0.1.0",
     description="Database communication manager",
     long_description=LONG_DESCRIPTION,
+    long_description_content_type="text/markdown",
     author="Alex Piskun",
     author_email="piskun.aleksey@gmail.com",
     url="https://github.com/viktorsapozhok/db-commuter",
@@ -26,13 +26,13 @@ setup(
     packages=find_packages("src"),
     install_requires=[
         "pandas>=0.24.0",
-        "SQLAlchemy>=1.3.3"
+        "sqlalchemy>=1.3.3",
+        "psycopg2-binary>=2.7.7"
     ],
-    extras_require={
-        "testing": [
-            "pytest",
-            "tox"
-        ]
-    },
-    python_requires=">=3.7"
+    python_requires=">=3.6",
+    classifiers=[
+        "Programming Language :: Python :: 3",
+        "License :: OSI Approved :: MIT License",
+        "Operating System :: OS Independent"
+    ]
 )

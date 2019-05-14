@@ -2,5 +2,5 @@
 
 **0.1.0**
 
-* SQLite support
+* Supports basic operations for SQLite and PostgreSQL databases
 
