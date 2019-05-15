@@ -87,10 +87,10 @@ class PgConnection(Connection):
     """
     Establish connection with PostgreSQL database
     """
-    def __init__(self, host, port, user, password, db_name, ssl_mode):
+    def __init__(self, host, port, user, password, db_name, ssl_mode='prefer'):
         """
         :param db_name: name of database
-        :param ssl_mode: boolean
+        :param sslmode: mode of SSL TCP/IP connection
         """
         super().__init__()
         self.host = host
@@ -101,17 +101,25 @@ class PgConnection(Connection):
         self.ssl_mode = ssl_mode
 
     def set_connection(self, **kwargs):
-        conn = 'dbname=' + self.db_name + ' ' + 'user=' + self.user + ' ' + \
-               'password=' + self.password + ' ' + 'host=' + self.host
-        if self.ssl_mode:
-            conn += ' ' + 'sslmode=require'
-        self.conn = psycopg2.connect(conn)
+        """initialize connection using psycopg2.connect
+
+        :param schema: if specified then schema is added to search_path in options
+            parameter of connect.
+        """
+        schema = kwargs.get('schema', None)
+
+        self.conn = psycopg2.connect(
+            host=self.host,
+            port=self.port,
+            user=self.user,
+            password=self.password,
+            dbname=self.db_name,
+            sslmode=self.ssl_mode,
+            options=f'--search_path={schema}')
 
     def set_engine(self, **kwargs):
         engine = 'postgresql://' + self.user + ':' + self.password + '@' + \
-                 self.host + ':' + self.port + '/' + self.db_name
-        if self.ssl_mode:
-            engine += '?' + 'sslmode=require'
+            self.host + ':' + self.port + '/' + self.db_name + '?sslmode=' + self.ssl_mode
         self.engine = create_engine(engine)
 
 

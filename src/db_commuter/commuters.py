@@ -7,6 +7,9 @@ Collection of methods for communication with database
 import abc
 
 import pandas as pd
+import psycopg2
+
+from io import StringIO
 from sqlalchemy import exc
 
 from db_commuter.connections import *
@@ -147,6 +150,26 @@ class PgCommuter(SQLCommuter):
         """
         return cls(params['host'], params['port'], params['user'],
                    params['password'], params['db_name'], params['ssl_mode'])
+
+    def insert_fast(self, table_name, data, sep=',', null=''):
+        """
+        """
+        conn = self.connector.get_conn()
+
+        with conn.cursor() as cur:
+            # put pandas frame to buffer
+            s_buf = StringIO()
+            data.to_csv(s_buf, index=False, header=False)
+            s_buf.seek(0)
+            # insert to table
+            try:
+                cur.copy_from(s_buf, table_name, sep=sep, null=null)
+            except (ValueError, exc.ProgrammingError, psycopg2.ProgrammingError, psycopg2.IntegrityError):
+                raise ValueError
+
+        conn.commit()
+        # close the connection
+        self.connector.close_connection()
 
     def delete_table(self, table_name, **kwargs):
         """

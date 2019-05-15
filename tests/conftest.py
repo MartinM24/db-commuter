@@ -33,6 +33,6 @@ def sqlite_commuter():
 def pg_commuter():
     pg_config = config.postgres
     return PgCommuter(pg_config['localhost'], pg_config['port'],
-                      pg_config['user'], pg_config['password'], pg_config['db_name'], False)
+                      pg_config['user'], pg_config['password'], pg_config['db_name'])
 
 
