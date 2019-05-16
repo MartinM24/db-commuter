@@ -87,10 +87,11 @@ class PgConnection(Connection):
     """
     Establish connection with PostgreSQL database
     """
-    def __init__(self, host, port, user, password, db_name, ssl_mode='prefer'):
-        """
-        :param db_name: name of database
-        :param sslmode: mode of SSL TCP/IP connection
+    def __init__(self, host, port, user, password, db_name, **kwargs):
+        """Besides the basic connection parameters any other connection parameter
+        supported by psycopg2.connect can be passed by keyword
+
+        :keyword schema: specifying schema prevents from explicit specification in class methods
         """
         super().__init__()
         self.host = host
@@ -98,29 +99,40 @@ class PgConnection(Connection):
         self.user = user
         self.password = password
         self.db_name = db_name
-        self.ssl_mode = ssl_mode
+        self.schema = kwargs.get('schema', None)
+
+        self.kwargs = {}
+
+        for key in kwargs.keys():
+            if key != 'schema':
+                self.kwargs[key] = kwargs.get(key)
 
     def set_connection(self, **kwargs):
         """initialize connection using psycopg2.connect
-
-        :param schema: if specified then schema is added to search_path in options
-            parameter of connect.
         """
-        schema = kwargs.get('schema', None)
-
-        self.conn = psycopg2.connect(
-            host=self.host,
-            port=self.port,
-            user=self.user,
-            password=self.password,
-            dbname=self.db_name,
-            sslmode=self.ssl_mode,
-            options=f'--search_path={schema}')
+        if self.schema is None:
+            self.conn = psycopg2.connect(
+                host=self.host,
+                port=self.port,
+                user=self.user,
+                password=self.password,
+                dbname=self.db_name,
+                **self.kwargs)
+        else:
+            self.conn = psycopg2.connect(
+                host=self.host,
+                port=self.port,
+                user=self.user,
+                password=self.password,
+                dbname=self.db_name,
+                options=f'--search_path={self.schema}',
+                **self.kwargs)
 
     def set_engine(self, **kwargs):
         engine = 'postgresql://' + self.user + ':' + self.password + '@' + \
-            self.host + ':' + self.port + '/' + self.db_name + '?sslmode=' + self.ssl_mode
+            self.host + ':' + self.port + '/' + self.db_name
+
+        for key in self.kwargs.keys():
+            engine += '?' + key + '=' + self.kwargs[key]
+
         self.engine = create_engine(engine)
-
-
-

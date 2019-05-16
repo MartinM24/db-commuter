@@ -6,10 +6,10 @@ Collection of methods for communication with database
 
 import abc
 
+from io import StringIO
+
 import pandas as pd
 import psycopg2
-
-from io import StringIO
 from sqlalchemy import exc
 
 from db_commuter.connections import *
@@ -99,9 +99,8 @@ class SQLCommuter(Commuter):
         """
         insert pandas dataframe (data) into database table (table_name)
 
-        :param schema: specify the schema, if None, use default schema.
-        :param chunksize: rows will be written in batches of this size at a time
-
+        :keyword schema: specify the schema, if None, use default schema.
+        :keyword chunksize: rows will be written in batches of this size at a time
         :raises ValueError: if insert fails
         """
         schema = kwargs.get('schema', None)
@@ -141,18 +140,18 @@ class PgCommuter(SQLCommuter):
     """
     Methods for communication with PostgreSQL database
     """
-    def __init__(self, host, port, user, password, db_name, ssl_mode):
-        super().__init__(PgConnection(host, port, user, password, db_name, ssl_mode))
+    def __init__(self, host, port, user, password, db_name, **kwargs):
+        super().__init__(PgConnection(host, port, user, password, db_name, **kwargs))
 
     @classmethod
-    def from_dict(cls, params):
-        """alternative constructor used access parameters from dictionary
+    def from_dict(cls, params, **kwargs):
+        """Alternative constructor used access parameters from dictionary
         """
         return cls(params['host'], params['port'], params['user'],
-                   params['password'], params['db_name'], params['ssl_mode'])
+                   params['password'], params['db_name'], **kwargs)
 
-    def insert_fast(self, table_name, data, sep=',', null=''):
-        """
+    def insert_fast(self, table_name, data):
+        """Place dataframe to buffer and use copy_from method for inserting from buffer
         """
         conn = self.connector.get_conn()
 
@@ -163,7 +162,7 @@ class PgCommuter(SQLCommuter):
             s_buf.seek(0)
             # insert to table
             try:
-                cur.copy_from(s_buf, table_name, sep=sep, null=null)
+                cur.copy_from(s_buf, table_name, sep=',', null='')
             except (ValueError, exc.ProgrammingError, psycopg2.ProgrammingError, psycopg2.IntegrityError):
                 raise ValueError
 
@@ -173,8 +172,8 @@ class PgCommuter(SQLCommuter):
 
     def delete_table(self, table_name, **kwargs):
         """
-        :param schema: name of the database schema
-        :param cascade: boolean, True if delete cascade
+        :keyword schema: name of the database schema
+        :keyword cascade: boolean, True if delete cascade
         """
         schema = kwargs.get('schema', None)
         cascade = kwargs.get('cascade', False)
@@ -187,11 +186,18 @@ class PgCommuter(SQLCommuter):
             self.execute('drop table if exists %s' % table_name)
 
     def is_table_exist(self, table_name, **kwargs):
-        schema = kwargs.get('schema', None)
+        schema = kwargs.get('schema', 'public')
 
-        table_name = self.__get_table_name(schema, table_name)
+        conn = self.connector.get_conn()
 
-        raise NotImplementedError()
+        with conn.cursor() as cur:
+            cur.execute(
+                "select * from information_schema.tables where table_name=%s and table_schema=%s",
+                (table_name, schema))
+
+        self.connector.close_connection()
+
+        return bool(cur.rowcount)
 
     @staticmethod
     def __get_table_name(schema, table_name):

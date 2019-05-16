@@ -32,7 +32,35 @@ def sqlite_commuter():
 @pytest.fixture(scope='session')
 def pg_commuter():
     pg_config = config.postgres
-    return PgCommuter(pg_config['localhost'], pg_config['port'],
-                      pg_config['user'], pg_config['password'], pg_config['db_name'])
+    return PgCommuter.from_dict(pg_config)
+
+
+@pytest.fixture(scope='session')
+def testers():
+    return Testers
+
+
+class Testers:
+    @staticmethod
+    def test_connection(commuter):
+        assert commuter.connector.get_conn() is not None
+
+    @staticmethod
+    def test_engine(commuter):
+        assert commuter.connector.get_engine().connect().connection.is_valid
+
+    @staticmethod
+    def test_execute(commuter):
+        if commuter.is_table_exist('test_table'):
+            commuter.delete_table('test_table')
+
+        assert not commuter.is_table_exist('test_table')
+
+        commuter.execute('create table if not exists test_table(var_a integer)')
+
+        assert commuter.is_table_exist('test_table')
+
+        commuter.delete_table('test_table')
+
 
 

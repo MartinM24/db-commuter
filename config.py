@@ -13,7 +13,7 @@ path2sqlite = path.join(root_dir, 'db', 'test_db.sqlite3')
 # PostgreSQL access parameters
 postgres = {
     'host': 'localhost',
-    'port': 5432,
+    'port': '5432',
     'user': 'postgres',
     'password': 'password',
     'db_name': 'test_db'
