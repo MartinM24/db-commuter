@@ -4,7 +4,13 @@
 Test SQLite commuter methods
 """
 
+from os import path
+
+import pandas as pd
+from datetime import datetime
+
 from db_commuter import PgCommuter
+import config
 
 
 def test_connection(pg_commuter, testers):
@@ -32,5 +38,29 @@ def test_engine_keywords(testers):
 def test_execute(pg_commuter, testers):
     testers.test_execute(pg_commuter)
 
+
+def test_execute_script(pg_commuter, testers):
+    testers.test_execute_script(pg_commuter)
+
+
+def test_select_insert(pg_commuter, table_data, testers):
+    testers.test_select_insert(pg_commuter, table_data)
+
+
+def test_insert_fast(pg_commuter, table_data):
+    if pg_commuter.is_table_exist('test_table'):
+        pg_commuter.delete_table('test_table')
+
+    pg_commuter.execute_script(path.join(config.path2scripts, 'create_test_table.sql'))
+
+    pg_commuter.insert_fast('test_table', table_data)
+
+    data = pg_commuter.select('select * from test_table')
+    data['date'] = pd.to_datetime(data['var_1'])
+
+    assert data['date'][0].date() == datetime.now().date()
+    assert len(data) == 3
+
+    pg_commuter.delete_table('test_table')
 
 

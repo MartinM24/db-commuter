@@ -75,17 +75,7 @@ class SQLCommuter(Commuter):
         """
         execute multiple SQL statements separated by semicolon
         """
-        with open(path2script, 'r') as fh:
-            script = fh.read()
-
-        conn = self.connector.get_conn()
-        cur = conn.cursor()
-        cur.executescript(script)
-
-        if commit:
-            conn.commit()
-
-        self.connector.close_connection()
+        raise NotImplementedError()
 
     def select(self, cmd, **kwargs):
         with self.connector.get_engine().connect() as conn:
@@ -135,6 +125,19 @@ class SQLiteCommuter(SQLCommuter):
 
         return False
 
+    def execute_script(self, path2script, commit=True):
+        with open(path2script, 'r') as fh:
+            script = fh.read()
+
+        conn = self.connector.get_conn()
+        cur = conn.cursor()
+        cur.executescript(script)
+
+        if commit:
+            conn.commit()
+
+        self.connector.close_connection()
+
 
 class PgCommuter(SQLCommuter):
     """
@@ -149,6 +152,19 @@ class PgCommuter(SQLCommuter):
         """
         return cls(params['host'], params['port'], params['user'],
                    params['password'], params['db_name'], **kwargs)
+
+    def execute_script(self, path2script, commit=True):
+        with open(path2script, 'r') as fh:
+            script = fh.read()
+
+        conn = self.connector.get_conn()
+        cur = conn.cursor()
+        cur.execute(script)
+
+        if commit:
+            conn.commit()
+
+        self.connector.close_connection()
 
     def insert_fast(self, table_name, data):
         """Place dataframe to buffer and use copy_from method for inserting from buffer

@@ -5,6 +5,7 @@ Test config
 """
 
 import pytest
+from os import path
 
 import numpy as np
 import pandas as pd
@@ -62,5 +63,40 @@ class Testers:
 
         commuter.delete_table('test_table')
 
+    @staticmethod
+    def test_execute_script(commuter):
+        """
+        execute 'create table' command from .sql script and verify that table has been created
+        """
+        if commuter.is_table_exist('test_table'):
+            commuter.delete_table('test_table')
+
+        assert not commuter.is_table_exist('test_table')
+
+        commuter.execute_script(path.join(config.path2scripts, 'create_test_table.sql'))
+
+        assert commuter.is_table_exist('test_table')
+
+        commuter.delete_table('test_table')
+
+    @staticmethod
+    def test_select_insert(commuter, table_data):
+        """
+        insert from pandas dataframe to table and select from table to dataframe
+        """
+        if commuter.is_table_exist('test_table'):
+            commuter.delete_table('test_table')
+
+        commuter.execute_script(path.join(config.path2scripts, 'create_test_table.sql'))
+
+        commuter.insert('test_table', table_data)
+
+        data = commuter.select('select * from test_table')
+        data['date'] = pd.to_datetime(data['var_1'])
+
+        assert data['date'][0].date() == datetime.now().date()
+        assert len(data) == 3
+
+        commuter.delete_table('test_table')
 
 
