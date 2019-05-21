@@ -64,3 +64,18 @@ def test_insert_fast(pg_commuter, table_data):
     pg_commuter.delete_table('test_table')
 
 
+def test_execute_with_params(pg_commuter):
+    who = "Yeltsin"
+    age = 72
+
+    pg_commuter.execute("create table if not exists people(name_last text, age integer)")
+    pg_commuter.execute("insert into people values (%s, %s)", vars=(who, age))
+
+    data = pg_commuter.select('select * from people')
+    assert data['age'][0] == 72
+    assert len(data) == 1
+
+    pg_commuter.delete_table('people')
+
+
+

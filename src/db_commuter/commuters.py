@@ -53,16 +53,23 @@ class SQLCommuter(Commuter):
     def is_table_exist(self, table_name, **kwargs):
         raise NotImplementedError()
 
-    def execute(self, cmd, commit=True):
+    def execute(self, cmd, vars=None, commit=True):
         """
         execute SQL command (cmd) and commit (if True) changes to database
+
+        :param cmd: text, database command
+        :param vars: parameters to command, may be provided as sequence or mapping
+        :param commit: boolean, persist changes to database if True
         """
         # set the connection
         conn = self.connector.get_conn()
         # create cursor object
         cur = conn.cursor()
         # execute sql command
-        cur.execute(cmd)
+        if vars is None:
+            cur.execute(cmd)
+        else:
+            cur.execute(cmd, vars)
 
         # save the changes
         if commit:
