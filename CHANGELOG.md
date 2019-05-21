@@ -3,7 +3,7 @@
 **0.1.2**
 
 * Added option to pass query parameters in `execute()` methods  
-* Added option to specify schema in PgCommuter constructor
+* Added option to specify `schema` in constructor of `PgCommuter` class
 
 **0.1.1**
 
