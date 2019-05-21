@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
-"""
-Collection of methods for communication with database
+"""Collection of methods for communication with database
 """
 
 import abc

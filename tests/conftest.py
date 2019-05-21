@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
-"""
-Test config
+"""Test config
 """
 
 import pytest

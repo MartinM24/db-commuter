@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
-"""
-Test SQLite commuter methods
+"""Test SQLite commuter methods
 """
 
 from os import path
@@ -65,6 +64,9 @@ def test_insert_fast(pg_commuter, table_data):
 
 
 def test_execute_with_params(pg_commuter):
+    if pg_commuter.is_table_exist('people'):
+        pg_commuter.delete_table('people')
+
     who = "Yeltsin"
     age = 72
 
@@ -78,4 +80,10 @@ def test_execute_with_params(pg_commuter):
     pg_commuter.delete_table('people')
 
 
+def test_schema(testers, table_data):
+    commuter = PgCommuter(
+        'localhost', '5432', 'postgres', 'password', 'test_db',
+        schema='public')
+
+    testers.test_select_insert(commuter, table_data)
 

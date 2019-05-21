@@ -33,7 +33,7 @@ data = commuter.select('select * from people where age > %s and salary > %s' % (
 Insert from pandas dataframe to database table.
 
 ```python
-commuter.insert(table_name, data)
+commuter.insert('people', data)
 ```
 
 Execute an SQL statement.
@@ -44,7 +44,7 @@ age = 72
 commuter.execute('insert into people values (?, ?)', vars=(who, age)) 
 ```
 
-If you want to execute multiple SQL statements with one call, use executescript().
+To execute multiple SQL statements with one call, use `executescript()`.
 
 ```python
 commuter.execute_script(path2script)
@@ -54,7 +54,7 @@ commuter.execute_script(path2script)
 
 ### Setting the Commuter
 
-To initialize a commuter with PostgreSQL database, you need to set the basic connection parameters, which are
+To initialize a new commuter with PostgreSQL database, you need to set the basic connection parameters, which are
 `host`, `port`, `user`, `password`, `db_name`. Any other connection parameter can be passed as a keyword.
 The list of the supported parameters [can be seen here](https://www.postgresql.org/docs/current/libpq-connect.html#LIBPQ-PARAMKEYWORDS).
 
@@ -76,7 +76,41 @@ commuter = PgCommuter.from_dict({
 
 ### Basic Usage
 
+Basic operations are provided with `select()`, `insert()` and `execute()` methods.
+
+```python
+data = commuter.select('select * from people where age > %s and salary > %s' % (55, 1000))
+commuter.insert('people', data)
+commuter.execute('insert into people values (%s, %s)', vars=('Yeltsin', 72)) 
+```   
+
+To execute multiple SQL statements with one call, use executescript().
+
+```python
+commuter.execute_script(path2script)
+```
+
 ### Fast Insert
+
+In contrast to `insert()` method which, in turn, uses pandas `to_sql()` machinery, the `insert_fast()` method 
+employs the effective `copy_from()` method. The data from pandas dataframe you want to append to database table is placed 
+as file-like object in buffer and then passed to `copy_from()`.   
+
+```python
+commuter.insert_fast('people', data)
+```
+
+As compared to conventional `insert()`, this method works much more effective on the large dataframes. 
+
+### Setting Schema in Constructor 
+
+If you operate only on tables within the specific schema, it could make sense to specify the name of database schema 
+when you create the commuter instance.
+
+```python
+from db_commuter.commuters import PgCommuter
+commuter = PgCommuter(host, port, user, password, db_name, schema='model')
+```
 
 ## License
 

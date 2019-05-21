@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
-"""
-Connection to database
+"""Connection to database
 """
 
 import abc
@@ -61,7 +60,7 @@ class Connection(abc.ABC):
 
     def close_engine(self):
         if self.engine is not None:
-            self.engine.dispose()
+            self.engine.close()
             self.engine = None
 
 
@@ -80,7 +79,7 @@ class SQLiteConnection(Connection):
         self.conn = sqlite3.connect(self.path2db)
 
     def set_engine(self, **kwargs):
-        self.engine = create_engine('sqlite:///' + self.path2db, echo=False)
+        self.engine = create_engine('sqlite:///' + self.path2db, echo=False).connect()
 
 
 class PgConnection(Connection):
@@ -135,4 +134,9 @@ class PgConnection(Connection):
         for key in self.kwargs.keys():
             engine += '?' + key + '=' + self.kwargs[key]
 
-        self.engine = create_engine(engine)
+        if self.schema is None:
+            self.engine = create_engine(engine).connect()
+        else:
+            self.engine = create_engine(engine).connect().execution_options(
+                schema_translate_map={None: self.schema}
+            )

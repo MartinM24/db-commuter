@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
-"""
-Test SQLite commuter methods
+"""Test SQLite commuter methods
 """
 
 def test_connection(sqlite_commuter, testers):
@@ -25,6 +24,9 @@ def test_select_insert(sqlite_commuter, table_data, testers):
 
 
 def test_execute_with_params(sqlite_commuter):
+    if sqlite_commuter.is_table_exist('people'):
+        sqlite_commuter.delete_table('people')
+
     who = "Yeltsin"
     age = 72
 
