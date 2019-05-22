@@ -1,6 +1,6 @@
 # Database Communication Manager
 
-Collection of methods for communication with database. Supports following databases: 
+Collection of wrappers for communication with database. Supports following databases: 
 
 * SQLite
 * PostgreSQL
@@ -93,8 +93,7 @@ commuter.execute_script(path2script)
 ### Fast Insert
 
 In contrast to `insert()` method which, in turn, uses pandas `to_sql()` machinery, the `insert_fast()` method 
-employs the effective `copy_from()` method. The data from pandas dataframe you want to append to database table is placed 
-as file-like object in buffer and then passed to `copy_from()`.   
+efficiently copies data from pandas dataframe to database employing PostgreSQL `copy` command. 
 
 ```python
 commuter.insert_fast('people', data)
