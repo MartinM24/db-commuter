@@ -1,5 +1,9 @@
 ## ChangeLog
 
+**0.1.3**
+
+* Fix bug with schema setting in sqlalchemy engine
+
 **0.1.2**
 
 * Added option to pass query parameters in `execute()` methods  

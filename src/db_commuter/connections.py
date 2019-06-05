@@ -137,6 +137,7 @@ class PgConnection(Connection):
         if self.schema is None:
             self.engine = create_engine(engine).connect()
         else:
-            self.engine = create_engine(engine).connect().execution_options(
-                schema_translate_map={None: self.schema}
-            )
+            self.engine = create_engine(
+                engine,
+                connect_args={'options': '-csearch_path={}'.format(self.schema)}
+            ).connect()

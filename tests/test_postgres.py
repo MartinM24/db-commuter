@@ -83,7 +83,7 @@ def test_execute_with_params(pg_commuter):
 def test_schema(testers, table_data):
     commuter = PgCommuter(
         'localhost', '5432', 'postgres', 'password', 'test_db',
-        schema='public')
+        schema='model')
 
     testers.test_select_insert(commuter, table_data)
 
