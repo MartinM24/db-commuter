@@ -1,5 +1,3 @@
-# Database Communication Manager
-
 Collection of wrappers for communication with database. Supports following databases: 
 
 * SQLite
