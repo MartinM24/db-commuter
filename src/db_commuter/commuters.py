@@ -99,8 +99,8 @@ class SQLCommuter(Commuter):
         try:
             data.to_sql(table_name, con=self.connector.get_engine(),
                         schema=schema, if_exists='append', index=False, chunksize=chunksize)
-        except (ValueError, exc.IntegrityError):
-            raise ValueError
+        except (ValueError, exc.IntegrityError) as e:
+            raise ValueError(e)
 
         self.connector.close_engine()
 
@@ -177,8 +177,8 @@ class PgCommuter(SQLCommuter):
             # insert to table
             try:
                 cur.copy_from(s_buf, table_name, sep=',', null='')
-            except (ValueError, exc.ProgrammingError, psycopg2.ProgrammingError, psycopg2.IntegrityError):
-                raise ValueError
+            except (ValueError, exc.ProgrammingError, psycopg2.ProgrammingError, psycopg2.IntegrityError) as e:
+                raise ValueError(e)
 
         conn.commit()
         # close the connection
