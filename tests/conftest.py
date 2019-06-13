@@ -64,8 +64,8 @@ class Testers:
 
     @staticmethod
     def test_execute_script(commuter):
-        """
-        execute 'create table' command from .sql script and verify that table has been created
+        """Execute 'create table' command from .sql script
+        and verify that table has been created
         """
         if commuter.is_table_exist('test_table'):
             commuter.delete_table('test_table')
@@ -80,8 +80,7 @@ class Testers:
 
     @staticmethod
     def test_select_insert(commuter, table_data):
-        """
-        insert from pandas dataframe to table and select from table to dataframe
+        """Insert from pandas dataframe to table and select from table to dataframe
         """
         if commuter.is_table_exist('test_table'):
             commuter.delete_table('test_table')

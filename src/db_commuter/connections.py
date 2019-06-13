@@ -17,10 +17,9 @@ __all__ = [
 
 
 class Connection(abc.ABC):
+    """Abstract class, provides definitions of basic connection parameters
     """
-    Abstract class, provides definitions of basic connection parameters
-    """
-    def __init__(self):
+    def __init__(self, **kwargs):
         """
         conn: connection to database
         engine: SQLAlchemy engine
@@ -29,8 +28,7 @@ class Connection(abc.ABC):
         self.engine = None
 
     def __del__(self):
-        """
-        close connection when class object is garbage collected
+        """Close connection when class object is garbage collected
         """
         self.close_connection()
         self.close_engine()
@@ -65,8 +63,7 @@ class Connection(abc.ABC):
 
 
 class SQLiteConnection(Connection):
-    """
-    Establish connection with SQLite database
+    """Establish connection with SQLite database
     """
     def __init__(self, path2db):
         """
@@ -83,8 +80,7 @@ class SQLiteConnection(Connection):
 
 
 class PgConnection(Connection):
-    """
-    Establish connection with PostgreSQL database
+    """Establish connection with PostgreSQL database
     """
     def __init__(self, host, port, user, password, db_name, **kwargs):
         """Besides the basic connection parameters any other connection parameter

@@ -25,23 +25,20 @@ class Commuter(abc.ABC):
 
     @abc.abstractmethod
     def select(self, cmd, **kwargs):
-        """
-        select data from database object using selection command (cmd)
+        """Select data from database object using selection command (cmd)
         and put it in pandas object
         """
         raise NotImplementedError()
 
     @abc.abstractmethod
     def insert(self, obj, data, **kwargs):
-        """
-        insert pandas object (data) into database object (obj)
+        """Insert pandas object (data) into database object (obj)
         """
         raise NotImplementedError()
 
 
 class SQLCommuter(Commuter):
-    """
-    Parent class for SQL databases
+    """Parent class for SQL databases
     """
     def __init__(self, connector):
         super().__init__(connector)
@@ -53,8 +50,7 @@ class SQLCommuter(Commuter):
         raise NotImplementedError()
 
     def execute(self, cmd, vars=None, commit=True):
-        """
-        execute SQL command (cmd) and commit (if True) changes to database
+        """Execute SQL command (cmd) and commit (if True) changes to database
 
         :param cmd: text, database command
         :param vars: parameters to command, may be provided as sequence or mapping
@@ -78,8 +74,7 @@ class SQLCommuter(Commuter):
         self.connector.close_connection()
 
     def execute_script(self, path2script, commit=True):
-        """
-        execute multiple SQL statements separated by semicolon
+        """Execute multiple SQL statements separated by semicolon
         """
         raise NotImplementedError()
 
@@ -92,8 +87,7 @@ class SQLCommuter(Commuter):
         return data
 
     def insert(self, table_name, data, **kwargs):
-        """
-        insert pandas dataframe (data) into database table (table_name)
+        """Insert pandas dataframe (data) into database table (table_name)
 
         :keyword schema: specify the schema, if None, use default schema.
         :keyword chunksize: rows will be written in batches of this size at a time
@@ -112,8 +106,7 @@ class SQLCommuter(Commuter):
 
 
 class SQLiteCommuter(SQLCommuter):
-    """
-    Methods for communication with SQLite database
+    """Methods for communication with SQLite database
     """
     def __init__(self, path2db):
         super().__init__(SQLiteConnection(path2db))
@@ -146,8 +139,7 @@ class SQLiteCommuter(SQLCommuter):
 
 
 class PgCommuter(SQLCommuter):
-    """
-    Methods for communication with PostgreSQL database
+    """Methods for communication with PostgreSQL database
     """
     def __init__(self, host, port, user, password, db_name, **kwargs):
         super().__init__(PgConnection(host, port, user, password, db_name, **kwargs))
